@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BPO Exam Simulator // Voice + Chat // by Kuldeep</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+body{background:#0a0e17;color:#e6edf3;min-height:100vh;display:flex;flex-direction:column;}
+.header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#111827;border-bottom:1px solid #1f2937;}
+.logo{font-size:18px;font-weight:bold;color:#38bdf8;letter-spacing:1px;}
+.logo span{color:#f472b6;}
+.user{font-size:13px;color:#9ca3af;}
+.container{flex:1;display:flex;justify-content:center;align-items:center;padding:24px 16px;}
+.card{background:#111827;border:1px solid #1f2937;border-radius:16px;padding:28px;width:100%;max-width:720px;box-shadow:0 0 30px rgba(56,189,248,0.08);}
+h1{font-size:22px;color:#38bdf8;margin-bottom:8px;text-align:center;}
+h2{font-size:17px;color:#38bdf8;margin-bottom:14px;}
+.sub{color:#9ca3af;text-align:center;margin-bottom:24px;font-size:14px;}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px;}
+.mode-card{background:#0a0e17;border:2px solid #1f2937;border-radius:14px;padding:28px 16px;text-align:center;cursor:pointer;transition:.25s;}
+.mode-card:hover{border-color:#38bdf8;transform:translateY(-4px);}
+.mode-card .icon{font-size:42px;margin-bottom:12px;}
+.mode-card h3{color:#e6edf3;font-size:16px;margin-bottom:6px;}
+.mode-card p{color:#9ca3af;font-size:12px;}
+.hidden{display:none!important;}
+.section{display:none;}
+.section.active{display:block;}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.timer{background:#1f2937;padding:5px 12px;border-radius:20px;font-weight:bold;color:#f472b6;font-size:14px;}
+.instruction{color:#9ca3af;margin-bottom:14px;font-size:14px;}
+.box{background:#0a0e17;border:1px dashed #38bdf8;border-radius:10px;padding:20px;font-size:17px;text-align:center;margin-bottom:20px;min-height:70px;display:flex;align-items:center;justify-content:center;}
+.btn{background:#1f2937;color:#e6edf3;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;font-size:14px;margin:5px 5px 5px 0;}
+.btn:hover{background:#374151;}
+.btn.primary{background:linear-gradient(135deg,#38bdf8,#6366f1);color:#0a0e17;font-weight:bold;}
+.btn.green{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:bold;}
+.word-bank,.answer-area{display:flex;flex-wrap:wrap;gap:8px;min-height:55px;background:#0a0e17;border:1px solid #1f2937;border-radius:10px;padding:12px;margin-bottom:12px;}
+.word-chip{background:#1f2937;padding:7px 14px;border-radius:8px;cursor:pointer;border:1px solid #374151;font-size:14px;}
+.word-chip:hover{background:#38bdf8;color:#0a0e17;}
+.feedback{margin-top:14px;font-weight:bold;min-height:22px;font-size:14px;}
+.feedback.good{color:#22c55e;}
+.feedback.bad{color:#ef4444;}
+input[type=text],textarea{width:100%;background:#0a0e17;border:1px solid #1f2937;border-radius:8px;padding:12px;color:#e6edf3;font-size:15px;margin-bottom:12px;font-family:inherit;}
+input[type=text]:focus,textarea:focus{outline:none;border-color:#38bdf8;}
+.result-box{text-align:center;padding:30px 0;}
+.result-box h1{font-size:52px;color:#38bdf8;margin:16px 0;}
+.footer{text-align:center;padding:16px;background:#111827;border-top:1px solid #1f2937;color:#9ca3af;font-size:13px;}
+.footer strong{color:#38bdf8;}
+.chat-msg{background:#0a0e17;border-left:3px solid #38bdf8;padding:12px 16px;border-radius:8px;margin-bottom:12px;font-size:14px;}
+.chat-msg.customer{border-left-color:#f472b6;}
+.chat-msg b{color:#38bdf8;}
+.chat-msg.customer b{color:#f472b6;}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">BPO<span>SIM</span></div>
+  <div class="user">👤 Candidate</div>
+</header>
+
+<main class="container">
+
+  <!-- MODE SELECTION -->
+  <div class="card" id="modeScreen">
+    <h1>🎯 BPO Exam Simulator</h1>
+    <p class="sub">Choose your practice mode / Apna practice mode chuno</p>
+    <div class="mode-grid">
+      <div class="mode-card" onclick="startVoice()">
+        <div class="icon">🎤</div>
+        <h3>Voice Process</h3>
+        <p>Reading • Repeat • Speaking<br>(Versant style)</p>
+      </div>
+      <div class="mode-card" onclick="startChat()">
+        <div class="icon">💬</div>
+        <h3>Chat Process</h3>
+        <p>Typing • Grammar • Chat reply<br>(BPO chat style)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ VOICE MODE ============ -->
+  <div class="card section" id="voiceMode">
+    <div class="section-header">
+      <h2>🎤 Voice Process</h2>
+      <span class="timer" id="voiceTimer">00:60</span>
+    </div>
+
+    <!-- Voice Part A: Reading -->
+    <div id="voiceReading">
+      <p class="instruction"><b>Part A — Reading:</b> Read the sentence aloud clearly.</p>
+      <div class="box" id="vReadSentence">The quick brown fox jumps over the lazy dog.</div>
+      <button class="btn primary" onclick="vRecognize('vReadFb', readingSentences[vReadIdx])">🎤 Start Recording</button>
+      <button class="btn" onclick="vNextReading()">Next ➡️</button>
+      <div class="feedback" id="vReadFb"></div>
+    </div>
+
+    <!-- Voice Part B: Repeat -->
+    <div id="voiceRepeat" class="hidden" style="margin-top:24px;">
+      <p class="instruction"><b>Part B — Repeat:</b> Listen and repeat the sentence.</p>
+      <button class="btn primary" onclick="vSpeak(repeatSentences[vRepIdx])">🔊 Play Sentence</button>
+      <div class="box" id="vRepSentence">—</div>
+      <button class="btn primary" onclick="vRecognize('vRepFb', repeatSentences[vRepIdx])">🎤 Record Answer</button>
+      <button class="btn" onclick="vNextRepeat()">Next ➡️</button>
+      <div class="feedback" id="vRepFb"></div>
+    </div>
+
+    <!-- Voice Part C: Build -->
+    <div id="voiceBuild" class="hidden" style="margin-top:24px;">
+      <p class="instruction"><b>Part C — Sentence Builds:</b> Arrange the words.</p>
+      <div class="word-bank" id="vBank"></div>
+      <div class="answer-area" id="vArea"></div>
+      <button class="btn primary" onclick="vCheckBuild()">Check ✅</button>
+      <button class="btn" onclick="vNextBuild()">Next ➡️</button>
+      <div class="feedback" id="vBuildFb"></div>
+    </div>
+
+    <!-- Voice Result -->
+    <div id="voiceResult" class="hidden" style="margin-top:24px;text-align:center;">
+      <h2>Voice Exam Complete 🎉</h2>
+      <div class="result-box"><p>Your Score:</p><h1 id="vScore">0</h1><p id="vMsg"></p></div>
+      <button class="btn primary" onclick="location.reload()">🔄 Restart</button>
+    </div>
+  </div>
+
+  <!-- ============ CHAT MODE ============ -->
+  <div class="card section" id="chatMode">
+    <div class="section-header">
+      <h2>💬 Chat Process</h2>
+      <span class="timer" id="chatTimer">00:90</span>
+    </div>
+
+    <!-- Chat Part A: Customer Reply -->
+    <div id="chatPartA">
+      <p class="instruction"><b>Part A — Customer Reply:</b> Type a professional reply to the customer.</p>
+      <div class="chat-msg customer" id="cMsg">Customer: "Hi, my order hasn't arrived yet. It's been 10 days!"</div>
+      <textarea id="cReply" rows="3" placeholder="Type your reply here..."></textarea>
+      <button class="btn primary" onclick="checkChatReply()">Submit ✅</button>
+      <button class="btn" onclick="nextChatReply()">Next ➡️</button>
+      <div class="feedback" id="cReplyFb"></div>
+    </div>
+
+    <!-- Chat Part B: Grammar -->
+    <div id="chatPartB" class="hidden" style="margin-top:24px;">
+      <p class="instruction"><b>Part B — Grammar:</b> Choose the correct sentence.</p>
+      <div class="box" id="gQuestion">Loading...</div>
+      <div id="gOptions"></div>
+      <button class="btn" onclick="nextGrammar()">Next ➡️</button>
+      <div class="feedback" id="gFb"></div>
+    </div>
+
+    <!-- Chat Part C: Typing Speed -->
+    <div id="chatPartC" class="hidden" style="margin-top:24px;">
+      <p class="instruction"><b>Part C — Typing Test:</b> Type the paragraph exactly as shown.</p>
+      <div class="box" id="typeText" style="font-size:15px;text-align:left;">Thank you for contacting our support team. We sincerely apologize for the inconvenience caused. Your issue has been forwarded to the concerned department and will be resolved within 24 hours.</div>
+      <textarea id="typedInput" rows="4" placeholder="Start typing here..."></textarea>
+      <button class="btn primary" onclick="checkTyping()">Check Speed ✅</button>
+      <div class="feedback" id="typeFb"></div>
+    </div>
+
+    <!-- Chat Result -->
+    <div id="chatResult" class="hidden" style="margin-top:24px;text-align:center;">
+      <h2>Chat Exam Complete 🎉</h2>
+      <div class="result-box"><p>Your Score:</p><h1 id="cScore">0</h1><p id="cMsgFinal"></p></div>
+      <button class="btn primary" onclick="location.reload()">🔄 Restart</button>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <p>Made with ❤️ by <strong>Kuldeep</strong> | BPO Exam Simulator v2.0 (Voice + Chat)</p>
+</footer>
+
+<script>
+/* ================= DATA ================= */
+const readingSentences = [
+  "The quick brown fox jumps over the lazy dog.",
+  "Cybersecurity is essential for protecting digital information.",
+  "Artificial intelligence is transforming the modern world.",
+  "Practice makes a person perfect in every skill."
+];
+const repeatSentences = [
+  "Please send me the report by tomorrow morning.",
+  "The meeting has been postponed to next week.",
+  "I would like to book a table for two people.",
+  "Technology changes faster than we can imagine."
+];
+const buildQuestions = [
+  { words:["is","This","book","interesting","very"], answer:"This book is very interesting" },
+  { words:["Kuldeep","a","is","developer","skilled"], answer:"Kuldeep is a skilled developer" },
+  { words:["we","tomorrow","will","meet","again"], answer:"we will meet again tomorrow" }
+];
+
+/* Chat data */
+const chatReplies = [
+  { customer:'Customer: "Hi, my order hasn\'t arrived yet. It\'s been 10 days!"',
+    keywords:["sorry","apolog","check","order","update","resolve","help"],
+    sample:"I sincerely apologize for the delay. Let me check your order status and update you shortly." },
+  { customer:'Customer: "I was charged twice for the same purchase."',
+    keywords:["sorry","apolog","refund","check","resolve","bank"],
+    sample:"I apologize for the double charge. I will check the transaction and initiate a refund if applicable." },
+  { customer:'Customer: "Your product stopped working after one week."',
+    keywords:["sorry","apolog","replace","warranty","assist","resolve"],
+    sample:"I am sorry for the inconvenience. This falls under warranty, and I will arrange a replacement for you." }
+];
+const grammarQuestions = [
+  { q:"Which sentence is correct?", options:["She don't like coffee.","She doesn't likes coffee.","She doesn't like coffee.","She not like coffee."], answer:2 },
+  { q:"Choose the correct spelling:", options:["Recieve","Receive","Receeve","Recive"], answer:1 },
+  { q:"Which is grammatically correct?", options:["I has a pen.","I have a pen.","I am have a pen.","I having a pen."], answer:1 }
+];
+
+/* ================= STATE ================= */
+let vScore=0, cScore=0;
+let vReadIdx=0, vRepIdx=0, vBuildIdx=0;
+let cReplyIdx=0, gIdx=0;
+let vTimer, cTimer;
+
+/* ================= MODE SWITCH ================= */
+function startVoice(){
+  document.getElementById("modeScreen").classList.add("hidden");
+  document.getElementById("voiceMode").classList.add("active");
+  startTimer("voiceTimer",60,()=>{});
+  loadBuild();
+}
+function startChat(){
+  document.getElementById("modeScreen").classList.add("hidden");
+  document.getElementById("chatMode").classList.add("active");
+  startTimer("chatTimer",90,()=>{});
+  loadGrammar();
+  loadChatReply();
+}
+
+/* ================= TIMER ================= */
+function startTimer(id, sec, onEnd){
+  const el=document.getElementById(id);
+  let r=sec;
+  el.textContent="00:"+String(r).padStart(2,"0");
+  const t=setInterval(()=>{
+    r--;
+    el.textContent="00:"+String(r).padStart(2,"0");
+    if(r<=0){ clearInterval(t); if(onEnd) onEnd(); }
+  },1000);
+}
+
+/* ================= VOICE MODE ================= */
+function vSpeak(text){ const u=new SpeechSynthesisUtterance(text); u.lang="en-US"; u.rate=0.9; speechSynthesis.speak(u); }
+
+function vRecognize(fbId, expected){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const fb = document.getElementById(fbId);
+  if(!SR){ fb.textContent="⚠️ Chrome browser use karo"; fb.className="feedback bad"; return; }
+  const rec = new SR(); rec.lang="en-US"; rec.start();
+  fb.textContent="🎙️ Listening..."; fb.className="feedback";
+  rec.onresult=(e)=>{
+    const said=e.results[0][0].transcript;
+    const sim=similarity(said.toLowerCase(), expected.toLowerCase());
+    if(sim>0.7){ fb.textContent="✅ Good! ("+Math.round(sim*100)+"% match)"; fb.className="feedback good"; vScore+=10; }
+    else { fb.textContent='⚠️ You said: "'+said+'"'; fb.className="feedback bad"; }
+  };
+  rec.onerror=()=>{ fb.textContent="⚠️ Mic error / permission denied"; fb.className="feedback bad"; };
+}
+
+function vNextReading(){
+  vReadIdx++;
+  if(vReadIdx<readingSentences.length){
+    document.getElementById("vReadSentence").textContent=readingSentences[vReadIdx];
+    document.getElementById("vReadFb").textContent="";
+  } else {
+    document.getElementById("voiceReading").classList.add("hidden");
+    document.getElementById("voiceRepeat").classList.remove("hidden");
+  }
+}
+function vNextRepeat(){
+  vRepIdx++;
+  if(vRepIdx<repeatSentences.length){
+    document.getElementById("vRepSentence").textContent="—";
+    document.getElementById("vRepFb").textContent="";
+  } else {
+    document.getElementById("voiceRepeat").classList.add("hidden");
+    document.getElementById("voiceBuild").classList.remove("hidden");
+    loadBuild();
+  }
+}
+function loadBuild(){
+  const bank=document.getElementById("vBank"), area=document.getElementById("vArea");
+  bank.innerHTML=""; area.innerHTML="";
+  if(vBuildIdx>=buildQuestions.length) return;
+  const q=buildQuestions[vBuildIdx];
+  [...q.words].sort(()=>Math.random()-0.5).forEach(w=>{
+    const chip=document.createElement("div");
+    chip.className="word-chip"; chip.textContent=w;
+    chip.onclick=()=>{ if(chip.parentElement===bank) area.appendChild(chip); else bank.appendChild(chip); };
+    bank.appendChild(chip);
+  });
+}
+function vCheckBuild(){
+  const area=document.getElementById("vArea");
+  const user=Array.from(area.children).map(c=>c.textContent).join(" ").toLowerCase();
+  const correct=buildQuestions[vBuildIdx].answer.toLowerCase();
+  const fb=document.getElementById("vBuildFb");
+  if(user===correct){ fb.textContent="✅ Correct!"; fb.className="feedback good"; vScore+=10; }
+  else { fb.textContent='❌ Correct: "'+buildQuestions[vBuildIdx].answer+'"'; fb.className="feedback bad"; }
+}
+function vNextBuild(){
+  vBuildIdx++;
+  document.getElementById("vBuildFb").textContent="";
+  if(vBuildIdx<buildQuestions.length) loadBuild();
+  else {
+    document.getElementById("voiceBuild").classList.add("hidden");
+    document.getElementById("voiceResult").classList.remove("hidden");
+    document.getElementById("vScore").textContent=vScore+" pts";
+    document.getElementById("vMsg").textContent = vScore>=30 ? "Excellent! 🎉" : "Keep practicing! 💪";
+  }
+}
+
+/* ================= CHAT MODE ================= */
+function loadChatReply(){
+  const data=chatReplies[cReplyIdx];
+  document.getElementById("cMsg").textContent=data.customer;
+  document.getElementById("cReply").value="";
+  document.getElementById("cReplyFb").textContent="";
+}
+function checkChatReply(){
+  const text=document.getElementById("cReply").value.toLowerCase().trim();
+  const fb=document.getElementById("cReplyFb");
+  if(text.length<10){ fb.textContent="⚠️ Reply thoda lamba likho."; fb.className="feedback bad"; return; }
+  const keywords=chatReplies[cReplyIdx].keywords;
+  const matched=keywords.filter(k=>text.includes(k)).length;
+  if(matched>=2){ fb.textContent="✅ Good professional reply!"; fb.className="feedback good"; cScore+=10; }
+  else { fb.textContent='⚠️ Try including words like: '+keywords.slice(0,3).join(", "); fb.className="feedback bad"; }
+}
+function nextChatReply(){
+  cReplyIdx++;
+  if(cReplyIdx<chatReplies.length) loadChatReply();
+  else {
+    document.getElementById("chatPartA").classList.add("hidden");
+    document.getElementById("chatPartB").classList.remove("hidden");
+  }
+}
+function loadGrammar(){
+  const q=grammarQuestions[gIdx];
+  document.getElementById("gQuestion").textContent=q.q;
+  const wrap=document.getElementById("gOptions"); wrap.innerHTML="";
+  q.options.forEach((opt,i)=>{
+    const b=document.createElement("button");
+    b.className="btn"; b.textContent=opt; b.style.display="block"; b.style.width="100%"; b.style.textAlign="left";
+    b.onclick=()=>{
+      const fb=document.getElementById("gFb");
+      if(i===q.answer){ fb.textContent="✅ Correct!"; fb.className="feedback good"; cScore+=10; }
+      else { fb.textContent="❌ Wrong answer."; fb.className="feedback bad"; }
+    };
+    wrap.appendChild(b);
+  });
+  document.getElementById("gFb").textContent="";
+}
+function nextGrammar(){
+  gIdx++;
+  if(gIdx<grammarQuestions.length) loadGrammar();
+  else {
+    document.getElementById("chatPartB").classList.add("hidden");
+    document.getElementById("chatPartC").classList.remove("hidden");
+  }
+}
+function checkTyping(){
+  const target=document.getElementById("typeText").textContent.trim();
+  const typed=document.getElementById("typedInput").value.trim();
+  const fb=document.getElementById("typeFb");
+  const sim=similarity(typed.toLowerCase(), target.toLowerCase());
+  const wpm=Math.round((typed.split(" ").length)/(90/60));
+  if(sim>0.85){ fb.textContent="✅ Great typing! Accuracy: "+Math.round(sim*100)+"% | Speed: ~"+wpm+" WPM"; fb.className="feedback good"; cScore+=10; }
+  else { fb.textContent="⚠️ Accuracy: "+Math.round(sim*100)+"% | Speed: ~"+wpm+" WPM. Try to type exactly."; fb.className="feedback bad"; }
+  setTimeout(()=>{
+    document.getElementById("chatPartC").classList.add("hidden");
+    document.getElementById("chatResult").classList.remove("hidden");
+    document.getElementById("cScore").textContent=cScore+" pts";
+    document.getElementById("cMsgFinal").textContent = cScore>=30 ? "Excellent! 🎉" : "Keep practicing! 💪";
+  },1200);
+}
+
+/* ================= UTILS ================= */
+function similarity(a,b){
+  const longer=a.length>b.length?a:b, shorter=a.length>b.length?b:a;
+  if(longer.length===0) return 1;
+  return (longer.length - lev(longer,shorter))/longer.length;
+}
+function lev(a,b){
+  const m=[]; for(let i=0;i<=b.length;i++) m[i]=[i]; for(let j=0;j<=a.length;j++) m[0][j]=j;
+  for(let i=1;i<=b.length;i++) for(let j=1;j<=a.length;j++)
+    m[i][j]= b[i-1]===a[j-1] ? m[i-1][j-1] : Math.min(m[i-1][j-1]+1, m[i][j-1]+1, m[i-1][j]+1);
+  return m[b.length][a.length];
+}
+</script>
+</body>
+</html>
